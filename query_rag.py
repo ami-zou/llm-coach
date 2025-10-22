@@ -41,10 +41,30 @@ def query_notes(query: str, n_results: int = 5):
     
     return results
 
+def retrieve_relevant_chunks(query: str, n_results: int = 5):
+    """Retrieve relevant chunks for RAG without printing details."""
+    # Load the embedding model
+    embedder = SentenceTransformer(MODEL_NAME)
+    
+    # Initialize ChromaDB client
+    client = chromadb.PersistentClient(path=DB_DIR)
+    collection = client.get_collection("notes")
+    
+    # Generate query embedding
+    query_embedding = embedder.encode([query])
+    
+    # Search for similar documents
+    results = collection.query(
+        query_embeddings=query_embedding.tolist(),
+        n_results=n_results
+    )
+    
+    # Return just the document chunks
+    return results['documents'][0]
+
 if __name__ == "__main__":
     # Test queries
     test_queries = [
-        "社交圈",
         "翻盘",
         "价值交换"
     ]
